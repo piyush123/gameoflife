@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conway's Game of Life</title>
+    <style>
+        .cell {
+            width: 20px;
+            height: 20px;
+            background-color: #EEE;
+            border: 1px solid #AAA;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Conway's Game of Life</h1>
+    <div id="grid"></div>
+    <button onclick="start()">Start</button>
+    <button onclick="stop()">Stop</button>
+    <button onclick="clearGrid()">Clear</button>
+    <button onclick="randomize()">Randomize</button>
+    
+    <script>
+        // Constants
+        const rows = 30;
+        const columns = 50;
+        const cellSize = 20;
+        const speed = 200; // Delay in milliseconds
+        
+        // Variables
+        let grid = createEmptyGrid();
+        let intervalId;
+        
+        // Create an empty grid
+        function createEmptyGrid() {
+            const emptyGrid = new Array(rows);
+            for (let i = 0; i < rows; i++) {
+                emptyGrid[i] = new Array(columns).fill(0);
+            }
+            return emptyGrid;
+        }
+        
+        // Initialize the grid on the webpage
+        function initializeGrid() {
+            const gridElement = document.getElementById('grid');
+            gridElement.style.width = `${cellSize * columns}px`;
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.addEventListener('click', () => toggleCellState(i, j));
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+        
+        // Toggle the state of a cell
+        function toggleCellState(row, col) {
+            const cell = grid[row][col];
+            grid[row][col] = cell === 0 ? 1 : 0;
+            const cellElement = document.getElementsByClassName('cell')[(row * columns) + col];
+            cellElement.style.backgroundColor = grid[row][col] === 0 ? '#EEE' : '#333';
+        }
+        
+        // Start the game
+        function start() {
+            intervalId = setInterval(updateGrid, speed);
+        }
+        
+        // Stop the game
+        function stop() {
+            clearInterval(intervalId);
+        }
+        
+        // Clear the grid
+        function clearGrid() {
+            grid = createEmptyGrid();
+            const cellElements = document.getElementsByClassName('cell');
+            Array.from(cellElements).forEach((cell) => {
+                cell.style.backgroundColor = '#EEE';
+            });
+        }
+        
+        // Randomize the grid
+        function randomize() {
+            clearGrid();
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    grid[i][j] = Math.round(Math.random());
+                    const cellElement = document.getElementsByClassName('cell')[(i * columns) + j];
+                    cellElement.style.backgroundColor = grid[i][j] === 0 ? '#EEE' : '#333';
+                }
+            }
+        }
+        
+        // Update the grid based on the rules of the game
+        function updateGrid() {
+            const newGrid = createEmptyGrid();
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    const cell = grid[i][j];
+                    const neighbors = countNeighbors(i, j);
+                    
+                    if (cell === 0 && neighbors === 3) {
+                        newGrid[i][j] = 1;
+                    } else if (cell === 1 && (neighbors < 2 || neighbors > 3)) {
+                        newGrid[i][j] = 0;
+                    } else {
+                        newGrid[i][j] = cell;
+                    }
+                    
+                    const cellElement = document.getElementsByClassName('cell')[(i * columns) + j];
+                    cellElement.style.backgroundColor = newGrid[i][j] === 0 ? '#EEE' : '#333';
+                }
+            }
+            
+            grid = newGrid;
+        }
+        
+        // Count the number of live neighbors for a cell
+        function countNeighbors(row, col) {
+            let count = 0;
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    const newRow = row + i;
+                    const newCol = col + j;
+                    if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < columns) {
+                        count += grid[newRow][newCol];
+                    }
+                }
+            }
+            count -= grid[row][col];
+            return count;
+        }
+        
+        // Initialize the grid when the page loads
+        window.onload = initializeGrid;
+    </script>
+</body>
+</html>
